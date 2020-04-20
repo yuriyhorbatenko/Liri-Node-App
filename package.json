@@ -21,9 +21,11 @@
     "axios": "^0.19.2",
     "date-format": "^3.0.0",
     "dotenv": "^8.2.0",
+    "file-system": "^2.2.2",
     "fs": "0.0.1-security",
     "moment": "^2.24.0",
-    "node-spotify-api": "^1.1.1"
+    "node-spotify-api": "^1.1.1",
+    "simple-node-logger": "^18.12.24"
   },
   "devDependencies": {}
 }

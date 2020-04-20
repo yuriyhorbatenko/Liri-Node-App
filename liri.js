@@ -1,36 +1,47 @@
-require("dotenv").config(); 
+require("dotenv").config();
+
+var fs = require("fs");
 var keys =  require("./keys.js")
 var axios = require("axios");
 var moment = require("moment");
 var Spotify = require("node-spotify-api");
 var spotify = new Spotify(keys.spotify);
 
+var log = "";
+var time = moment().format("DD-MM-YYYY h:mm:ss");
+
 var action = process.argv[2];
 var value = process.argv.slice(3).join(" ");
 
 
-switch (action) {
+userInputs(action, value);
 
-case "concert-this":
-  concert();
-  break;
 
-case "movie-this":
-  movie();
-  break;
+  function userInputs (action, value){
 
-case "spotify-this-song":
-  spotifySong();
-  break;
+    switch (action) {
 
-case "do-what-it-says":
-  doWhat();
-  break;
+      case "concert-this":
+        concert(value);
+      break;
+
+      case "movie-this":
+        movie(value);
+      break;
+
+      case "spotify-this-song":
+        spotifySong(value);
+      break;
+
+      case "do-what-it-says":
+        doWhat(value);
+      break;
   
-}
+    }
+  };
 
 
-  function concert() {
+  function concert(value) {
 
     if (value === "") {
 
@@ -59,12 +70,15 @@ case "do-what-it-says":
       
       function(response) {
 
+        var artist = response.data[0].artist.name;
         var name = response.data[0].venue.name;
         var country = response.data[0].venue.country;
         var city = response.data[0].venue.city;
         var date = moment(response.data[0].datetime).format("MM/DD/YYYY")
 
         console.log("----------Your Search Results is here:--------");
+        console.log("Artist: " + artist);
+        console.log("*");
         console.log("Venue: " + name);
         console.log("*");
         console.log("Country: " + country);
@@ -73,13 +87,28 @@ case "do-what-it-says":
         console.log("*");
         console.log("Date: " + date);
         console.log("----------------------------------------------");
-      
+
+        log = ["\r\n ---------------Searched-Concert---------------",
+        "\r\n --------------" + time + "--------------",
+        "\r\n Artist: " + artist,
+        "\r\n Venue: " + name,
+        "\r\n Country: " + country,
+        "\r\n City: " + city,
+        "\r\n ----------------------------------------------",];
+
+          fs.appendFile("log.txt", log, (error) => {
+
+            if (error) {
+
+              throw error;
+            }
+          });
       });
     }
   };
 
 
-  function movie() {
+  function movie(value) {
 
     if (value === "") {
 
@@ -133,19 +162,38 @@ case "do-what-it-says":
         console.log("Plot: " + plot);
         console.log("----------------------------------------------");
 
+        log = ["\r\n ---------------Searched-Movie-----------------",
+        "\r\n -------------" + time + "---------------",
+        "\r\n Movie: " + title,
+        "\r\n Year: " + year,
+        "\r\n Country: " + country,
+        "\r\n Language: " + language,
+        "\r\n IMDB Rating: " + imdbRating,
+        "\r\n Rotten Tomatoes: " + ratings,
+        "\r\n Actors: " + actors,
+        "\r\n Plot: " + plot,
+        "\r\n ----------------------------------------------"];
+
+          fs.appendFile("log.txt", log, (error) => {
+
+            if (error) {
+
+              throw error;
+            }
+          });
       });
     }
   };
 
 
-  function spotifySong() {
+  function spotifySong(value) {
 
     if (value === "") {
 
       spotify.search({ type: "track", query: "Ace of Base The Sign" }, function(err, response) {
 
         if (err) {
-         return console.log('Error occurred: ' + err);
+         return console.log("Error occurred: " + err);
         }
 
         console.log("---------------Recomended Song:---------------");
@@ -161,13 +209,12 @@ case "do-what-it-says":
       });
     }
     
-    
-  else {
+    else {
 
-    spotify.search({ type: "track", query: value, limit: 10 }, function(err, response) {
+      spotify.search({ type: "track", query: value, limit: 10 }, function(err, response) {
      
       if (err) {
-        return console.log('Error occurred: ' + err);
+        return console.log("Error occurred: " + err);
       }
 
         for (var i=0; i < response.tracks.items.length; i++) {
@@ -178,7 +225,6 @@ case "do-what-it-says":
           var url = response.tracks.items[i].preview_url;
 
           console.log("----------Your Search Results is here:--------");
-          console.log("----------------------------------------------");
           console.log("Artist: " + artist);
           console.log("*");
           console.log("Song: " + song);
@@ -188,9 +234,39 @@ case "do-what-it-says":
           console.log("URL: " + url);
           console.log("----------------------------------------------");
 
+          log = ["\r\n ---------------Searched-Song------------------",
+          "\r\n ------------" + time + "----------------",
+          "\r\n Artist: " + artist,
+          "\r\n Song: " + song,
+          "\r\n Album: " + album,
+          "\r\n URL: " + url,
+          "\r\n ----------------------------------------------",];
+
+          fs.appendFile("log.txt", log, (error) => {
+
+            if (error) {
+
+              throw error;
+            }
+          });
         }
       })
     }
+  };
+
+
+  function doWhat(value) {
+
+    fs.readFile("random.txt", "utf8", function(error, data) {
+      
+      if (error) {
+        return console.log(error);
+      }
+
+      var dataArr  = data.split(",");
+      userInputs(dataArr[0], dataArr[1]);
+
+    });
   };
 
 
